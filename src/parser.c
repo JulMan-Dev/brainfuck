@@ -9,9 +9,6 @@ bool parser_new(parser_t *out, const char *start)
     *out = (parser_t) {
         .start = start,
         .ptr = start,
-        .cap = 0,
-        .size = 0,
-        .nodes = NULL,
     };
     return true;
 }
@@ -83,8 +80,6 @@ size_t parser_consume_node(parser_t *parser, ast_node_t *out)
 
         if (current == 0)
         {
-            // TODO: add [ and ] support
-
             if (*parser->ptr == '[')
             {
                 start = parser->ptr++;
