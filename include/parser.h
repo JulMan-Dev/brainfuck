@@ -9,11 +9,7 @@
 
 typedef struct
 {
-    const char *start;
-    const char *ptr;
-
-    size_t cap, size;
-    ast_node_t *nodes;
+    const char *start, *ptr;
 } parser_t;
 
 /// Creates a new parser. You must pass start pointer.
