@@ -6,32 +6,36 @@ API_HIDDEN void ast__inspect_node(ast_node_t const *node, size_t depth)
 {
     for (size_t i = 0; i < depth; i++)
     {
-        printf("  ");
+        fprintf(stderr, "  ");
     }
 
     switch (node->kind)
     {
     case NODE_EOF:
-        printf("<eof>\n");
-        break;
+        {
+            fprintf(stderr, "<eof>\n");
+        } break;
+
     case NODE_RIGHT:
     case NODE_LEFT:
     case NODE_PLUS:
     case NODE_MINUS:
     case NODE_OUTPUT:
     case NODE_INPUT:
-        printf("%c (x%lu)\n", node->kind, node->operands);
-        break;
-    case NODE_LOOP:
-        printf("block [:\n");
-
-        ast_chunk_t *chunk = node->block.chunk;
-        for (size_t j = 0; j < chunk->nodes_count; j++)
         {
-            ast__inspect_node(&chunk->nodes[j], depth + 1);
-        }
+            fprintf(stderr, "%c (x%lu)\n", node->kind, node->operands);
+        } break;
 
-        break;
+    case NODE_LOOP:
+        {
+            fprintf(stderr, "block [:\n");
+
+            ast_chunk_t *chunk = node->chunk;
+            for (size_t j = 0; j < chunk->nodes_count; j++)
+            {
+                ast__inspect_node(&chunk->nodes[j], depth + 1);
+            }
+        } break;
     }
 }
 

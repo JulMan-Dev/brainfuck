@@ -14,7 +14,7 @@ int main(int argc, const char **argv) {
     char *buf = malloc(size);
     if (fread(buf, 1, size, file) < size)
     {
-        printf("Failed to read %s.\n", argv[1]);
+        fprintf(stderr, "Failed to read %s.\n", argv[1]);
         return 1;
     }
 
