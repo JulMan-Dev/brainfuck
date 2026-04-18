@@ -173,13 +173,8 @@ bool state_eval_node(state_t* state, ast_node_t* node)
             for (size_t i = 0; i < node->operands; i++)
             {
                 int ch = getchar();
-                if (ch == EOF)
-                {
-                    state->current_frame->errno = EIO;
-                    return false;
-                }
 
-                *s = ch;
+                *s = ch == EOF ? 0 : ch;
             }
         }
         break;
