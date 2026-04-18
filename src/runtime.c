@@ -54,6 +54,7 @@ void state_new(state_t* out, ast_chunk_t* chunk)
         .main_chunk = chunk,
         .current_frame = main_frame,
         .strip = NULL,
+        .strip_index = 0,
         .strip_len = 0,
     };
 }
@@ -72,7 +73,6 @@ bool state_step(state_t* state)
     if (chunk->nodes_count == pc)
     {
         // end of frame.
-
         if (frame->parent == NULL)
         {
             free(state->current_frame);
