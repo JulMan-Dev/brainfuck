@@ -16,8 +16,8 @@ bool parser_new(parser_t *out, const char *start)
 size_t parser_consume_chunk(parser_t *parser, ast_chunk_t *out)
 {
     // allocating by blocks of 16
-    size_t cap, count = 0;
-    ast_node_t *list = calloc(cap = 16, sizeof(ast_node_t));
+    size_t cap = 16, count = 0;
+    ast_node_t *list = calloc(cap, sizeof(ast_node_t));
     assert(list);
     ast_node_t last;
     size_t bytes = 0;
@@ -46,7 +46,8 @@ size_t parser_consume_chunk(parser_t *parser, ast_chunk_t *out)
 
 API_HIDDEN bool parser_is_bf(char code)
 {
-    return code == '<' || code == '>' || code == '+' || code == '-' || code == '[' || code == ']';
+    return code == '<' || code == '>' || code == '+' || code == '-' || code == '.' || code == ',' ||
+        code == '[' || code == ']';
 }
 
 size_t parser_consume_comment(parser_t *parser)
@@ -99,10 +100,7 @@ size_t parser_consume_node(parser_t *parser, ast_node_t *out)
                 *out = (ast_node_t) {
                     .kind = NODE_LOOP,
                     .source = start,
-                    .block = {
-                        .chunk = chunk,
-                        .end_binding = 1,
-                    },
+                    .chunk = chunk,
                 };
                 return real_start - start + bytes;
             }
@@ -197,5 +195,5 @@ void parser_error0(parser_t *parser)
 
 void parser_error1(parser_t *parser)
 {
-    printf("\n");
+    fprintf(stderr, "\n");
 }
