@@ -86,6 +86,7 @@ size_t parser_consume_node(parser_t *parser, ast_node_t *out)
                 start = parser->ptr++;
 
                 ast_chunk_t *chunk = malloc(sizeof(ast_chunk_t));
+                assert(chunk);
                 size_t bytes = parser_consume_block(parser, chunk);
 
                 if (chunk->nodes[chunk->nodes_count - 1].kind == NODE_EOF)
@@ -179,6 +180,18 @@ size_t parser_consume_block(parser_t *parser, ast_chunk_t *out)
         }
 
         list[count++] = last;
+    }
+
+    if (*parser->ptr == 0)
+    {
+        if (cap == count)
+        {
+            cap += 16;
+            list = realloc(list, cap * sizeof(ast_node_t));
+            assert(list);
+        }
+
+        list[count++] = (ast_node_t) { .kind = NODE_EOF, .source = parser->ptr };
     }
 
     *out = (ast_chunk_t) {
