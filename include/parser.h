@@ -30,7 +30,7 @@ API_HIDDEN size_t parser_consume_block(parser_t *, ast_chunk_t *);
 /// Generates an error. Does not abort the program.
 #define parser_error(parser, ...) do { \
     parser_error0(parser); \
-    printf(__VA_ARGS__); \
+    fprintf(stderr, __VA_ARGS__); \
     parser_error1(parser); \
 } while (0)
 
