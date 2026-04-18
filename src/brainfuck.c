@@ -6,7 +6,8 @@
 #include "ast.h"
 #include "runtime.h"
 
-int main(int argc, const char **argv) {
+int main(int argc, const char **argv)
+{
     setbuf(stdout, NULL);
 
     if (argc == 1)
