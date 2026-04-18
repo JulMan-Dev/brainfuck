@@ -7,6 +7,8 @@
 #include "runtime.h"
 
 int main(int argc, const char **argv) {
+    setbuf(stdout, NULL);
+
     if (argc == 1)
     {
         fprintf(stderr, "%s <input.bf>\n", argv[0]);
