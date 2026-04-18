@@ -33,14 +33,8 @@ struct ast_node_t
         // RIGHT, LEFT, PLUS, MINUS, OUTPUT, INPUT
         size_t operands;
 
-        // IF_ZERO
-        struct {
-            ast_chunk_t *chunk;
-            ptrdiff_t end_binding;
-        } block;
-
-        // IF_NOT_ZERO
-        ptrdiff_t start_binding;
+        // LOOP
+        ast_chunk_t *chunk;
     };
 };
 
