@@ -190,7 +190,7 @@ size_t parser_consume_block(parser_t *parser, ast_chunk_t *out)
 
 void parser_error0(parser_t *parser)
 {
-    printf("Error on :%lu: ", parser->ptr - parser->start);
+    fprintf(stderr, "Error on :%lu: ", parser->ptr - parser->start);
 }
 
 void parser_error1(parser_t *parser)
