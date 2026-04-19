@@ -3,6 +3,6 @@ project(brainfuck C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(brainfuck)
+add_executable(bf)
 include_directories(include)
 add_subdirectory(src)

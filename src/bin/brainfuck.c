@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/errno.h>
 
 #include "parser.h"
 #include "ast.h"
@@ -17,6 +18,12 @@ int main(int argc, const char **argv)
     }
 
     FILE *file = fopen(argv[1], "r");
+    if (!file)
+    {
+        fprintf(stderr, "%s: %s: %s\n", argv[0], argv[1], strerror(errno));
+        return 1;
+    }
+
     fseek(file, 0L, SEEK_END);
     size_t size = ftell(file);
     rewind(file);
@@ -25,6 +32,8 @@ int main(int argc, const char **argv)
     if (fread(buf, 1, size, file) < size)
     {
         fprintf(stderr, "Failed to read %s.\n", argv[1]);
+        fclose(file);
+        free(buf);
         return 1;
     }
     buf[size] = 0;
@@ -42,8 +51,10 @@ int main(int argc, const char **argv)
     {
         if (!state_step(&state))
         {
-            int errno = state.current_frame->errno;
-            fprintf(stderr, "Runtime error: %s\n", strerror(errno));
+            int err = state.current_frame->err;
+            fprintf(stderr, "Runtime error: %s\n", strerror(err));
+            fclose(file);
+            free(buf);
             return 1;
         }
     }
