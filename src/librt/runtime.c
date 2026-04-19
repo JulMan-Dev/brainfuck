@@ -10,17 +10,10 @@ API_HIDDEN int __allocate_strip(unsigned char **strip, size_t *cap)
 {
     unsigned char *new_strip;
 
-    int test = *strip == NULL || *cap == 0;
+    size_t old_cap = *cap;
     *cap += 16;
 
-    if (test)
-    {
-        new_strip = calloc(*cap, 1);
-    }
-    else
-    {
-        new_strip = realloc(*strip, *cap);
-    }
+    new_strip = realloc(*strip, *cap);
 
     if (!new_strip)
     {
@@ -33,6 +26,8 @@ API_HIDDEN int __allocate_strip(unsigned char **strip, size_t *cap)
 
         return ENOMEM;
     }
+
+    memset(new_strip + old_cap, 0, *cap - old_cap);
 
     *strip = new_strip;
     return 0;
@@ -61,7 +56,6 @@ int brainfuck_rt_init(struct strip_t *out)
     return 0;
 }
 
-
 int brainfuck_rt_deinit(struct strip_t *strip)
 {
     setbuf(stdout, "\n");
@@ -79,7 +73,7 @@ int brainfuck_rt_deinit(struct strip_t *strip)
 
 int brainfuck_rt_lef(struct strip_t *strip, size_t operand)
 {
-    if (operand > strip->cap)
+    if (operand > strip->index)
     {
         brainfuck_rt_error(strip, EFAULT);
         brainfuck_rt_deinit(strip);
@@ -180,7 +174,7 @@ int brainfuck_rt_loop(struct strip_t *strip, bf_block_t block)
 
         if (ret)
         {
-            // we do not re emmit from here.
+            // we do not re emit from here.
             return ret;
         }
     }
@@ -190,6 +184,6 @@ int brainfuck_rt_loop(struct strip_t *strip, bf_block_t block)
 
 int brainfuck_rt_error(struct strip_t *strip, int err)
 {
-    fprintf(stderr, "brainfuck runtime error: %s", strerror(err));
+    fprintf(stderr, "brainfuck runtime error: %s\n", strerror(err));
     return 0;
 }
