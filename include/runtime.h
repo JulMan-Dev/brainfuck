@@ -10,7 +10,7 @@ typedef struct frame_t frame_t;
 struct frame_t {
     frame_t *parent;
     ast_chunk_t *chunk;
-    int errno;
+    int err;
     size_t pc;
 };
 

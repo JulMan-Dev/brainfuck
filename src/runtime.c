@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/errno.h>
 
 #undef errno // mandatory
@@ -14,7 +15,7 @@ void frame_new(frame_t* out, ast_chunk_t* chunk)
     *out = (frame_t){
         .parent = NULL,
         .chunk = chunk,
-        .errno = 0,
+        .err = 0,
         .pc = 0,
     };
 }
@@ -24,7 +25,7 @@ void frame_with_parent(frame_t* out, frame_t* parent, ast_chunk_t* chunk)
     *out = (frame_t){
         .parent = parent,
         .chunk = chunk,
-        .errno = 0,
+        .err = 0,
         .pc = 0,
     };
 }
@@ -38,6 +39,7 @@ API_HIDDEN unsigned char* state_get_strip(state_t* state, size_t index)
         size_t amount = MAX(16, index - state->strip_len);
         unsigned char* strip = realloc(state->strip, state->strip_len + amount);
         assert(strip);
+        memset(strip + state->strip_len, 0, amount);
         state->strip_len += amount;
         state->strip = strip;
     }
@@ -101,7 +103,7 @@ bool state_step(state_t* state)
 
     if (chunk->nodes_count <= pc)
     {
-        frame->errno = EFAULT;
+        frame->err = EFAULT;
         return false;
     }
 
@@ -130,7 +132,7 @@ bool state_eval_node(state_t* state, ast_node_t* node)
         {
             if (node->operands > state->strip_index)
             {
-                state->current_frame->errno = EIO;
+                state->current_frame->err = EIO;
                 return false;
             }
 
