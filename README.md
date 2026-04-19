@@ -2,6 +2,8 @@
 
 This is an experimental implementation of a brainfuck compiler targeting the C language.
 
+Tested on Linux and macOS.
+
 ```bash
 $ cat > A.bf <<EOF
 >++++++++[<++++++++>-]<+.
@@ -57,3 +59,19 @@ int main(void)
     return 0;
 }
 ```
+
+## Building from sources
+
+To build from sources, you will need a recent version of CMake and a C compiler (MSVC not supported).
+
+```bash
+$ mkdir build
+$ cmake ..
+$ make
+
+# Or
+$ cmake -G Ninja ..
+$ ninja
+```
+
+This will produce `bf`, `bfc`, `libbf_rt_static.a` and `libbf_rt_dynamic.so/dylib`.
