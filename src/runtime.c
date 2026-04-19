@@ -132,7 +132,7 @@ bool state_eval_node(state_t* state, ast_node_t* node)
         {
             if (node->operands > state->strip_index)
             {
-                state->current_frame->err = EIO;
+                state->current_frame->err = EFAULT;
                 return false;
             }
 
