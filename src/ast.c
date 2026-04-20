@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "ast.h"
 
@@ -45,4 +46,20 @@ void ast_inspect_chunk(ast_chunk_t const *chunk)
     {
         ast__inspect_node(&chunk->nodes[i], 0);
     }
+}
+
+void ast_free(ast_chunk_t const *chunk)
+{
+    for (size_t i = 0; i < chunk->nodes_count; i++)
+    {
+        ast_node_t *node = &chunk->nodes[i];
+
+        if (node->kind == NODE_LOOP)
+        {
+            ast_free(node->chunk);
+            free(node->chunk);
+        }
+    }
+
+    free(chunk->nodes);
 }

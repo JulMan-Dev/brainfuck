@@ -44,7 +44,8 @@ int bf_evals(bf_state_t _s, char *code, size_t len)
 
     if (!frame)
     {
-        free(chunk); // TODO: free entire ast tree
+        ast_free(chunk);
+        free(chunk);
         return ENOMEM;
     }
 
@@ -165,10 +166,13 @@ loop_flow:
     }
 
     // cleaning things up.
+    ast_free(chunk);
+    free(chunk);
+
     while (state->current_frame)
     {
         __frame *older_frame = state->current_frame->parent;
-        free(state->current_frame); // TODO: free entire ast tree
+        free(state->current_frame);
         state->current_frame = older_frame;
     }
 

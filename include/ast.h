@@ -40,3 +40,4 @@ struct ast_node_t
 
 /// Prints out the AST chunk.
 API_HIDDEN void ast_inspect_chunk(ast_chunk_t const *);
+API_HIDDEN void ast_free(ast_chunk_t const *);
