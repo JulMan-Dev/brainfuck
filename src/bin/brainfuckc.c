@@ -36,7 +36,7 @@ int main(int argc, const char **argv)
     buf[size] = 0;
 
     parser_t parser;
-    parser_new(&parser, buf);
+    parser_new(&parser, buf, size);
 
     ast_chunk_t chunk;
     parser_consume_chunk(&parser, &chunk);

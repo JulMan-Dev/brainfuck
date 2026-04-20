@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-bool parser_new(parser_t *out, const char *start)
+bool parser_new(parser_t *out, const char *start, size_t len)
 {
     *out = (parser_t) {
         .start = start,
         .ptr = start,
+        .len = len,
     };
     return true;
 }
@@ -54,7 +55,7 @@ size_t parser_consume_comment(parser_t *parser)
 {
     const char *start = parser->ptr;
 
-    while (*parser->ptr != 0 && !parser_is_bf(*parser->ptr))
+    while (parser->ptr - parser->start <= parser->len && !parser_is_bf(*parser->ptr))
     {
         parser->ptr++;
     }
@@ -70,11 +71,11 @@ size_t parser_consume_node(parser_t *parser, ast_node_t *out)
     const char *start;
     size_t operands = 0;
 
-    while (*parser->ptr != 0)
+    while (parser->ptr - parser->start <= parser->len)
     {
         parser_consume_comment(parser);
 
-        if (*parser->ptr == 0)
+        if (parser->ptr - parser->start > parser->len)
         {
             break;
         }
@@ -154,11 +155,11 @@ size_t parser_consume_block(parser_t *parser, ast_chunk_t *out)
     ast_node_t last;
     size_t bytes = 0;
 
-    while (*parser->ptr != 0)
+    while (parser->ptr - parser->start <= parser->len)
     {
         bytes += parser_consume_comment(parser);
 
-        if (*parser->ptr == 0)
+        if (parser->ptr - parser->start > parser->len)
         {
             break;
         }

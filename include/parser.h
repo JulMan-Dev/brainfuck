@@ -10,10 +10,11 @@
 typedef struct
 {
     const char *start, *ptr;
+    size_t len;
 } parser_t;
 
-/// Creates a new parser. You must pass start pointer.
-API_HIDDEN bool parser_new(parser_t *, const char *);
+/// Creates a new parser. You must pass start pointer and length.
+API_HIDDEN bool parser_new(parser_t *, const char *, size_t);
 
 /// Consumes as much bytes as required to strip comment from ptr.
 API_HIDDEN size_t parser_consume_comment(parser_t *);
