@@ -3,9 +3,7 @@
 #include <string.h>
 #include <sys/errno.h>
 
-#include "parser.h"
-#include "ast.h"
-#include "runtime.h"
+#include "libbf/int.h"
 
 int main(int argc, const char **argv)
 {
@@ -38,27 +36,26 @@ int main(int argc, const char **argv)
     }
     buf[size] = 0;
 
-    parser_t parser;
-    parser_new(&parser, buf, size);
+    int error;
+    bf_state_t state;
 
-    ast_chunk_t chunk;
-    parser_consume_chunk(&parser, &chunk);
-
-    state_t state;
-    state_new(&state, &chunk);
-
-    while (state_can_step(&state))
+    if ((error = bf_new(&state)))
     {
-        if (!state_step(&state))
-        {
-            int err = state.current_frame->err;
-            fprintf(stderr, "Runtime error: %s\n", strerror(err));
-            fclose(file);
-            free(buf);
-            return 1;
-        }
+        fprintf(stderr, "Failed to load runtime: %s\n", strerror(error));
+        fclose(file);
+        free(buf);
+        return 1;
     }
 
+    if (bf_evals(state, buf, size))
+    {
+        bf_deinit(state);
+        fclose(file);
+        free(buf);
+        return 1;
+    }
+
+    bf_deinit(state);
     fclose(file);
     free(buf);
     return 0;
