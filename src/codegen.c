@@ -104,7 +104,6 @@ void codegen_println(codegen_t* generator, size_t index, char* line)
 
 void codegen_process(codegen_t* generator, ast_node_t* node, size_t section)
 {
-    static char* early_return = "if (ret) return ret;";
     const char *pattern = NULL;
 
     switch (node->kind)
@@ -114,38 +113,39 @@ void codegen_process(codegen_t* generator, ast_node_t* node, size_t section)
         }
         break;
     case NODE_RIGHT:
-        pattern = "ret = brainfuck_rt_rig(strip, %lu);";
+        pattern = "ret = brainfuck_rt_rig(strip, %lu)";
     case NODE_LEFT:
         if (!pattern)
         {
-            pattern = "ret = brainfuck_rt_lef(strip, %lu);";
+            pattern = "ret = brainfuck_rt_lef(strip, %lu)";
         }
     case NODE_PLUS:
         if (!pattern)
         {
-            pattern = "ret = brainfuck_rt_inc(strip, %lu);";
+            pattern = "ret = brainfuck_rt_inc(strip, %lu)";
         }
     case NODE_MINUS:
         if (!pattern)
         {
-            pattern = "ret = brainfuck_rt_dec(strip, %lu);";
+            pattern = "ret = brainfuck_rt_dec(strip, %lu)";
         }
     case NODE_OUTPUT:
         if (!pattern)
         {
-            pattern = "ret = brainfuck_rt_out(strip, %lu);";
+            pattern = "ret = brainfuck_rt_out(strip, %lu)";
         }
     case NODE_INPUT:
         {
             if (!pattern)
             {
-                pattern = "ret = brainfuck_rt_inp(strip, %lu);";
+                pattern = "ret = brainfuck_rt_inp(strip, %lu)";
             }
 
-            char *line;
-            __snprintf(line, pattern, node->operands);
+            char *line, *line1;
+            __snprintf(line1, pattern, node->operands);
+            __snprintf(line, "if ((%s)) return ret;", line1);
+            free(line1);
             codegen_println(generator, section, line);
-            codegen_println(generator, section, early_return);
         } break;
 
     case NODE_LOOP:
@@ -154,9 +154,8 @@ void codegen_process(codegen_t* generator, ast_node_t* node, size_t section)
             char *name = generator->blocks[i].name;
 
             char *line;
-            __snprintf(line, "ret = brainfuck_rt_loop(strip, %s);", name);
+            __snprintf(line, "if ((ret = brainfuck_rt_loop(strip, %s))) return ret;", name);
             codegen_println(generator, section, line);
-            codegen_println(generator, section, early_return);
         } break;
     }
 }
@@ -210,12 +209,13 @@ int codegen_flush(codegen_t generator, FILE *output)
     // main generation
     fprintf(output, "int main(void)\n");
     fprintf(output, "{\n");
-    fprintf(output, "    int ret;\n");
+    fprintf(output, "    int ret = 0;\n");
     fprintf(output, "    struct strip_t strip;\n");
-    fprintf(output, "    if ((ret = brainfuck_rt_init(&strip))) return ret;\n");
-    fprintf(output, "    if ((ret = __brainfuck0(&strip))) return ret;\n");
+    fprintf(output, "    if ((ret = brainfuck_rt_init(&strip))) goto main_return;\n");
+    fprintf(output, "    if ((ret = __brainfuck0(&strip))) goto main_return;\n");
+    fprintf(output, "main_return:\n");
     fprintf(output, "    brainfuck_rt_deinit(&strip); // cannot fail\n");
-    fprintf(output, "    return 0;\n");
+    fprintf(output, "    return ret;\n");
     fprintf(output, "}\n");
     return ferror(output);
 }

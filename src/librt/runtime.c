@@ -51,6 +51,8 @@ int brainfuck_rt_init(struct strip_t *out)
         .cap = cap,
         .index = 0,
         .err = 0,
+        .ext_out = stdout,
+        .ext_inp = stdin,
     };
     return 0;
 }
@@ -75,7 +77,6 @@ int brainfuck_rt_lef(struct strip_t *strip, size_t operand)
     if (operand > strip->index)
     {
         brainfuck_rt_error(strip, EFAULT);
-        brainfuck_rt_deinit(strip);
         return EFAULT;
     }
 
@@ -93,7 +94,6 @@ int brainfuck_rt_rig(struct strip_t *strip, size_t operand)
         if (ret)
         {
             brainfuck_rt_error(strip, ret);
-            brainfuck_rt_deinit(strip);
             return ret;
         }
     }
@@ -119,14 +119,18 @@ int brainfuck_rt_out(struct strip_t *strip, size_t operand)
     int ret;
     unsigned char value = strip->buf[strip->index];
 
+    if (!strip->ext_out)
+    {
+        return 0;
+    }
+
     for (size_t i = 0; i < operand; i++)
     {
-        ret = fputc(value, stdout);
+        ret = fputc(value, strip->ext_out);
 
-        if (ret == EOF && ferror(stdout))
+        if (ret == EOF && ferror(strip->ext_out))
         {
             brainfuck_rt_error(strip, EOF);
-            brainfuck_rt_deinit(strip);
             return EOF;
         }
     }
@@ -138,21 +142,26 @@ int brainfuck_rt_inp(struct strip_t *strip, size_t operand)
 {
     int ret;
 
+    if (!strip->ext_inp)
+    {
+        strip->buf[strip->index] = 0;
+        return 0;
+    }
+
     for (size_t i = 0; i < operand; i++)
     {
-        ret = fgetc(stdin);
+        ret = fgetc(strip->ext_inp);
 
         if (ret == EOF)
         {
             // silent EOF, 0 instead
-            if (feof(stdin))
+            if (feof(strip->ext_inp))
             {
                 ret = 0;
             }
-            else if (ferror(stdin))
+            else if (ferror(strip->ext_inp))
             {
                 brainfuck_rt_error(strip, EIO);
-                brainfuck_rt_deinit(strip);
                 return EIO;
             }
         }
@@ -184,5 +193,17 @@ int brainfuck_rt_loop(struct strip_t *strip, bf_block_t block)
 int brainfuck_rt_error(struct strip_t *strip, int err)
 {
     fprintf(stderr, "brainfuck runtime error: %s\n", strerror(err));
+    return 0;
+}
+
+int brainfuck_rt_ext_sout(struct strip_t *strip, void *file)
+{
+    strip->ext_out = file;
+    return 0;
+}
+
+int brainfuck_rt_ext_sinp(struct strip_t *strip, void *file)
+{
+    strip->ext_inp = file;
     return 0;
 }
