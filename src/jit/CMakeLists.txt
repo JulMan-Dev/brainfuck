@@ -1,7 +1,6 @@
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64")
     set(lib_sources
-        codegen_aarch64.c
-        jit_aarch64_builtin.S)
+        codegen_aarch64.c)
 endif()
 
 set(lib_sources ${lib_sources} codegen_common.c)

@@ -2,7 +2,6 @@
 #include <string.h>
 #include <sys/errno.h>
 #include <sys/mman.h>
-#include <capstone/capstone.h>
 
 #include "jit.h"
 #include "parser.h"
@@ -242,26 +241,6 @@ int bf_evals_jit(bf_state_t _s, char *code, size_t len)
     {
         goto free_page;
     }
-
-    csh cs_handle;
-    cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &cs_handle);
-
-    cs_insn *insn;
-    size_t count = cs_disasm(cs_handle, page, code_len, (uint64_t)page, 0, &insn);
-
-    fprintf(stderr, "cs_err: %i\n", cs_errno(cs_handle));
-
-    for (size_t i = 0; i < count; i++)
-        printf("0x%"PRIx64" : %s %s\n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
-
-    //cs_free(insn, count);
-    cs_close(&cs_handle);
-
-    FILE *f = fopen("jit_dump.bin", "wb");
-    fwrite(page, 1, code_len, f);
-    fclose(f);
-
-    printf("dump done.\n");
 
     // now run!
     if (mprotect(page, code_len, PROT_READ | PROT_EXEC))

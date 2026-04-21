@@ -1,17 +1,13 @@
 cmake_minimum_required(VERSION 4.2)
-project(brainfuck C ASM)
+project(brainfuck C)
 
 set(CMAKE_C_STANDARD 11)
 
 add_executable(bf)
 add_executable(bfc)
-add_executable(bf.jit)
 add_library(bf_rt_static STATIC)
 add_library(bf_rt_shared SHARED)
 add_library(bf_int_static STATIC)
 add_library(bf_int_shared SHARED)
 include_directories(include)
-include_directories(/opt/homebrew/include)
 add_subdirectory(src)
-target_link_libraries(bf_int_static /opt/homebrew/lib/libcapstone.a)
-target_link_libraries(bf_int_shared /opt/homebrew/lib/libcapstone.a)

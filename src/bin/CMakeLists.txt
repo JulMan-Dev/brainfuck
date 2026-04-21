@@ -4,7 +4,3 @@ target_link_libraries(bf bf_int_static)
 
 target_sources(bfc PRIVATE
     brainfuckc.c)
-
-target_sources(bf.jit PRIVATE
-    bf.jit.c)
-target_link_libraries(bf.jit bf_int_static)

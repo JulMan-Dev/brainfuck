@@ -27,8 +27,8 @@ typedef struct
 #define A64_MOV_REG(Xd, Xn) (0xaa0003e0 | (((Xn) & 31) << 16) | (((Xd) & 31)))
 // movz Xd, #imm, lsl #shift
 #define A64_MOVZ(Xd, imm, shift) (0xd2800000 | ((Xd) & 31) | (((imm) & 0xffff) << 5) | (((shift) / 16) << 21))
-// ldp Xt1, Xt2, [Xn, #imm]!
-#define A64_LDP_PRE(Xt1, Xt2, Xn, imm) (0xa9c00000 | ((Xt1) & 31) |  (((Xt2) & 31) << 10) | \
+// ldp Xt1, Xt2, [Xn], #imm
+#define A64_LDP_POST(Xt1, Xt2, Xn, imm) (0xa8c00000 | ((Xt1) & 31) |  (((Xt2) & 31) << 10) | \
     (((Xn) & 31) << 5) | ((((uint32_t) (imm) / 8) & 127) << 15))
 // stp Xt1, Xt2, [Xn, #imm]!
 #define A64_STP_PRE(Xt1, Xt2, Xn, imm) (0xa9800000 | ((Xt1) & 31) |  (((Xt2) & 31) << 10) | \
@@ -43,6 +43,8 @@ typedef struct
 #define A64_ADR(Xd, imm) (0x10000000 | (((imm) & 0x3) << 29) | (((imm) >> 2 & 0x7ffff) << 5) | ((Xd) & 31))
 // ret Xr
 #define A64_RET(Xr) (0xd65f0000 | (((Xr) & 31) << 5))
+
+#define PRE_APPEND_INSTRUCTIONS 2
 
 API_HIDDEN int __jit_push_patch(jit_codegen_t *, size_t, void *, uint64_t);
 
@@ -139,7 +141,7 @@ queue_start:
         goto free_queue;
     }
 
-    size_t total = 2;
+    size_t total = PRE_APPEND_INSTRUCTIONS;
 
     for (size_t j = 0; j < chunks; j++)
     {
@@ -230,7 +232,7 @@ code_operand:
 
                     ast_chunk_t *target = node->chunk;
                     __pending *found = NULL;
-                    size_t path = 0;
+                    size_t path = PRE_APPEND_INSTRUCTIONS;
 
                     for (size_t m = 0; m < chunks; m++) // too many nested indices.
                     {
@@ -251,10 +253,10 @@ code_operand:
                         goto free_generated_chunks;
                     }
 
-                    size_t imm = path - total - *l;
+                    ssize_t imm = path - total - *l ;
 
                     // adr x1, <imm>
-                    PUSH_CODE A64_ADR(1, imm);
+                    PUSH_CODE A64_ADR(1, imm * 4);
 
                     // bl brainfuck_rt_loop
                     PUSH_CODE A64_BL(0);
@@ -277,10 +279,10 @@ code_operand:
 
         // mov x0, xzr
         PUSH_CODE A64_MOV_REG(0, A64_XZR);
-        // ldp x19, x20, [sp, #0x10]!
-        PUSH_CODE A64_LDP_PRE(19, 20, A64_SP, 0x10);
-        // ldp x29, x30, [sp, #0x10]!
-        PUSH_CODE A64_LDP_PRE(29, 30, A64_SP, 0x10);
+        // ldp x19, x20, [sp], #0x10
+        PUSH_CODE A64_LDP_POST(19, 20, A64_SP, 0x10);
+        // ldp x29, x30, [sp], #0x10
+        PUSH_CODE A64_LDP_POST(9, 30, A64_SP, 0x10);
         // ret
         PUSH_CODE A64_RET(30);
 

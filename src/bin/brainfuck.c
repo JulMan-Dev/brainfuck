@@ -7,19 +7,95 @@
 
 int main(int argc, const char **argv)
 {
-    setbuf(stdout, NULL);
+    int error = 0;
 
     if (argc == 1)
     {
-        fprintf(stderr, "%s <input.bf>\n", argv[0]);
+print_usage:
+        fprintf(stderr, "%s [-i <input>] [-o <output>] [-jit] <input.bf>\n", argv[0]);
         return 1;
     }
 
-    FILE *file = fopen(argv[1], "r");
-    if (!file)
+    int jit = 0;
+    FILE *input = stdin, *output = stdout, *file = NULL;
+
+    for (size_t i = 1; i < argc; i++)
     {
-        fprintf(stderr, "%s: %s: %s\n", argv[0], argv[1], strerror(errno));
-        return 1;
+        const char *arg = argv[i];
+
+        if (strcmp(arg, "-jit") == 0)
+        {
+            jit = 1;
+            continue;
+        }
+
+        if (strcmp(arg, "-i") == 0)
+        {
+            if (++i == argc)
+            {
+                fprintf(stderr, "%s: expected file after -i\n", argv[0]);
+                error = 1;
+                goto close_files;
+            }
+
+            if (input && input != stdin)
+            {
+                fclose(input);
+            }
+
+            input = fopen(argv[i], "r");
+
+            if (!input)
+            {
+                error = errno;
+                fprintf(stderr, "%s: %s: %s\n", argv[0], argv[i], strerror(error));
+                goto close_files;
+            }
+
+            continue;
+        }
+
+        if (strcmp(arg, "-o") == 0)
+        {
+            if (++i == argc)
+            {
+                fprintf(stderr, "%s: expected file after -o\n", argv[0]);
+                error = 1;
+                goto close_files;
+            }
+
+            if (output && output != stdout)
+            {
+                fclose(output);
+            }
+
+            output = fopen(argv[i], "w");
+
+            if (!output)
+            {
+                error = errno;
+                fprintf(stderr, "%s: %s: %s\n", argv[0], argv[i], strerror(error));
+                goto close_files;
+            }
+
+            continue;
+        }
+
+        if (file)
+        {
+            fprintf(stderr, "%s: multiple scripts given\n", argv[0]);
+            error = 1;
+            goto close_files;
+        }
+
+        file = fopen(arg, "r");
+
+        if (!file)
+        {
+            error = errno;
+            fprintf(stderr, "%s: %s: %s\n", argv[0], argv[i], strerror(error));
+            goto close_files;
+        }
     }
 
     fseek(file, 0L, SEEK_END);
@@ -36,7 +112,6 @@ int main(int argc, const char **argv)
     }
     buf[size] = 0;
 
-    int error;
     bf_state_t state;
 
     if ((error = bf_new(&state)))
@@ -47,16 +122,39 @@ int main(int argc, const char **argv)
         return 1;
     }
 
-    if (bf_evals(state, buf, size))
+    bf_set_input(state, input);
+    bf_set_output(state, output);
+    setbuf(output, NULL);
+
+    if (jit)
     {
-        bf_deinit(state);
-        fclose(file);
-        free(buf);
-        return 1;
+        error = bf_evals_jit(state, buf, size);
+    }
+    else
+    {
+        error = bf_evals(state, buf, size);
     }
 
     bf_deinit(state);
-    fclose(file);
+
+free_buf:
     free(buf);
-    return 0;
+
+close_files:
+    if (input && input != stdin)
+    {
+        fclose(input);
+    }
+
+    if (output && output != stdout)
+    {
+        fclose(output);
+    }
+
+    if (file)
+    {
+        fclose(file);
+    }
+
+    return error;
 }
