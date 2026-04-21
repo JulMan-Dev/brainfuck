@@ -9,15 +9,16 @@ int main(int argc, const char **argv)
 {
     int error = 0;
 
+    int jit = 0;
+    FILE *input = stdin, *output = stdout, *file = NULL;
+
     if (argc == 1)
     {
 print_usage:
         fprintf(stderr, "%s [-i <input>] [-o <output>] [-jit] <input.bf>\n", argv[0]);
-        return 1;
+        error = 1;
+        goto close_files;
     }
-
-    int jit = 0;
-    FILE *input = stdin, *output = stdout, *file = NULL;
 
     for (size_t i = 1; i < argc; i++)
     {
@@ -96,6 +97,11 @@ print_usage:
             fprintf(stderr, "%s: %s: %s\n", argv[0], argv[i], strerror(error));
             goto close_files;
         }
+    }
+
+    if (!file)
+    {
+        goto print_usage;
     }
 
     fseek(file, 0L, SEEK_END);
