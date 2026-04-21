@@ -1,3 +1,4 @@
+#include <dlfcn.h>
 #include <stdlib.h>
 #include <sys/errno.h>
 
@@ -22,11 +23,25 @@ int bf_new(bf_state_t *out)
         return error;
     }
 
+    void *handle = dlopen(NULL, 0);
+
+    lib_symbols_t symbols = (lib_symbols_t) {
+        .handle = handle,
+        .left = dlsym(handle, "brainfuck_rt_lef"),
+        .right = dlsym(handle, "brainfuck_rt_rig"),
+        .inc = dlsym(handle, "brainfuck_rt_inc"),
+        .dec = dlsym(handle, "brainfuck_rt_dec"),
+        .out = dlsym(handle, "brainfuck_rt_out"),
+        .inp = dlsym(handle, "brainfuck_rt_inp"),
+        .loop = dlsym(handle, "brainfuck_rt_loop"),
+    };
+
     *state = (__state) {
         .strip = strip,
         .current_frame = NULL,
         .input = stdin,
         .output = stdout,
+        .symbols = symbols,
     };
     *out = state;
     return 0;
@@ -44,8 +59,7 @@ int bf_deinit(bf_state_t _s)
 
         if (frame->kind == frame_kind_chunk)
         {
-            fprintf(stderr, "TODO: free of ast chunk.\n");
-            abort();
+            ast_free(frame->chunk);
         }
 
         free(frame);
@@ -53,6 +67,8 @@ int bf_deinit(bf_state_t _s)
 
     // runtime strip, using libbf_rt
     brainfuck_rt_deinit(&state->strip);
+
+    dlclose(state->symbols.handle);
 
     free(state);
     return 0;

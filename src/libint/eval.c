@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <sys/mman.h>
+#include <capstone/capstone.h>
 
+#include "jit.h"
 #include "parser.h"
 #include "libbf/int.h"
 #include "__int_state.h"
@@ -177,6 +180,114 @@ loop_flow:
     }
 
     return 0;
+}
+
+int bf_eval_jit(bf_state_t _s, char *code)
+{
+    return bf_evals_jit(_s, code, strlen(code));
+}
+
+int bf_evals_jit(bf_state_t _s, char *code, size_t len)
+{
+    int error;
+    parser_t parser;
+    ast_chunk_t *chunk;
+
+    __state *state = _s;
+
+    if ((error = __bf_check_init(state)))
+    {
+        return error;
+    }
+
+    if (state->current_frame)
+    {
+        return EBUSY;
+    }
+
+    parser_new(&parser, code, len);
+
+    chunk = malloc(sizeof(ast_chunk_t));
+
+    if (!chunk)
+    {
+        return ENOMEM;
+    }
+
+    parser_consume_chunk(&parser, chunk);
+
+    jit_codegen_t codegen;
+
+    if ((error = jit_generator_new(&codegen, &state->symbols, chunk)))
+    {
+        goto free_ast;
+    }
+
+    if ((error = jit_generator_prepare(&codegen)))
+    {
+        goto free_generator;
+    }
+
+    size_t code_len = jit_generator_code_len(&codegen);
+
+    void *page = mmap(NULL, code_len, PROT_WRITE | PROT_READ, MAP_PRIVATE | MAP_ANON, -1, 0);
+
+    if (page == MAP_FAILED)
+    {
+        error = errno;
+        goto free_generator;
+    }
+
+    if ((error = jit_generator_flush(&codegen, page, code_len)))
+    {
+        goto free_page;
+    }
+
+    csh cs_handle;
+    cs_open(CS_ARCH_ARM64, CS_MODE_ARM, &cs_handle);
+
+    cs_insn *insn;
+    size_t count = cs_disasm(cs_handle, page, code_len, (uint64_t)page, 0, &insn);
+
+    fprintf(stderr, "cs_err: %i\n", cs_errno(cs_handle));
+
+    for (size_t i = 0; i < count; i++)
+        printf("0x%"PRIx64" : %s %s\n", insn[i].address, insn[i].mnemonic, insn[i].op_str);
+
+    //cs_free(insn, count);
+    cs_close(&cs_handle);
+
+    FILE *f = fopen("jit_dump.bin", "wb");
+    fwrite(page, 1, code_len, f);
+    fclose(f);
+
+    printf("dump done.\n");
+
+    // now run!
+    if (mprotect(page, code_len, PROT_READ | PROT_EXEC))
+    {
+        error = errno;
+        goto free_page;
+    }
+
+    bf_block_t jit_code = page;
+
+    if ((error = bf_evalc(_s, jit_code)))
+    {
+        // oh, no
+        goto free_page;
+    }
+
+free_page:
+    munmap(page, code_len);
+
+free_generator:
+    jit_generator_free(&codegen);
+
+free_ast:
+    ast_free(chunk);
+    free(chunk);
+    return error;
 }
 
 int bf_evalc(bf_state_t _s, bf_block_t block)

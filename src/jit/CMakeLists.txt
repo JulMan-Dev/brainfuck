@@ -1,0 +1,10 @@
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64")
+    set(lib_sources
+        codegen_aarch64.c
+        jit_aarch64_builtin.S)
+endif()
+
+set(lib_sources ${lib_sources} codegen_common.c)
+
+target_sources(bf_int_static PRIVATE ${lib_sources})
+target_sources(bf_int_shared PRIVATE ${lib_sources})
