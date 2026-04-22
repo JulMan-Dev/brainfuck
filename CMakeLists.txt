@@ -11,3 +11,5 @@ add_library(bf_int_static STATIC)
 add_library(bf_int_shared SHARED)
 include_directories(include)
 add_subdirectory(src)
+
+target_link_options(bf PRIVATE -rdynamic)

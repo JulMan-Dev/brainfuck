@@ -23,7 +23,7 @@ int bf_new(bf_state_t *out)
         return error;
     }
 
-    void *handle = dlopen(NULL, 0);
+    void *handle = dlopen(NULL, RTLD_NOW);
 
     lib_symbols_t symbols = (lib_symbols_t) {
         .handle = handle,
