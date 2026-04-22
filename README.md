@@ -2,7 +2,7 @@
 
 This is an experimental implementation of a brainfuck compiler targeting the C language.
 
-Tested on Linux and macOS.
+Tested on Linux and macOS. JIT only works on macOS, it segfaults on Linux.
 
 ```bash
 $ cat > A.bf <<EOF
@@ -67,7 +67,7 @@ int main(void)
 }
 ```
 
-# `libbf_int`, the brainfuck interpreter library
+## `libbf_int`, the brainfuck interpreter library
 
 This is an abstraction layer over `libbf_rt`, it allows you to run brainfuck code directly into your binary.
 
