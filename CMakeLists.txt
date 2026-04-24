@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 4.2)
 project(brainfuck C)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 add_executable(bf)
 add_executable(bfc)
