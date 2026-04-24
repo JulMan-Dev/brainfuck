@@ -8,12 +8,12 @@
 #include "libbf/int.h"
 #include "__int_state.h"
 
-int bf_eval(bf_state_t _s, char *code)
+int bf_eval(bf_state_t _s, const char *code)
 {
     return bf_evals(_s, code, strlen(code));
 }
 
-int bf_evals(bf_state_t _s, char *code, size_t len)
+int bf_evals(bf_state_t _s, const char *code, size_t len)
 {
     int error;
     parser_t parser;
@@ -181,12 +181,12 @@ loop_flow:
     return 0;
 }
 
-int bf_eval_jit(bf_state_t _s, char *code)
+int bf_eval_jit(bf_state_t _s, const char *code)
 {
     return bf_evals_jit(_s, code, strlen(code));
 }
 
-int bf_evals_jit(bf_state_t _s, char *code, size_t len)
+int bf_evals_jit(bf_state_t _s, const char *code, size_t len)
 {
     int error;
     parser_t parser;
