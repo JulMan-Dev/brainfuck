@@ -1,6 +1,9 @@
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
     set(lib_sources
         codegen_aarch64.c)
+else()
+    set(lib_sources
+        codegen_unsupported.c)
 endif()
 
 set(lib_sources ${lib_sources} codegen_common.c)
