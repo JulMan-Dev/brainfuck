@@ -42,6 +42,7 @@ int bf_new(bf_state_t *out)
         .input = stdin,
         .output = stdout,
         .symbols = symbols,
+        .ring = NULL,
     };
     *out = state;
     return 0;
@@ -63,6 +64,20 @@ int bf_deinit(bf_state_t _s)
         }
 
         free(frame);
+    }
+
+    // freeing the ring
+    if (state->ring)
+    {
+        state->ring->previous->next = NULL; // avoid segfault
+
+        while (state->ring)
+        {
+            __code *new_ring = state->ring->next;
+            ast_free(state->ring->chunk);
+            free(state->ring);
+            state->ring = new_ring;
+        }
     }
 
     // runtime strip, using libbf_rt

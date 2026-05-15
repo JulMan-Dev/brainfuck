@@ -1,25 +1,17 @@
 #include <stdlib.h>
-#include <string.h>
 #include <sys/errno.h>
 #include <sys/mman.h>
 
 #include "jit.h"
-#include "parser.h"
 #include "libbf/int.h"
 #include "__int_state.h"
+#include "__int_code.h"
 
-int bf_eval(bf_state_t _s, const char *code)
-{
-    return bf_evals(_s, code, strlen(code));
-}
-
-int bf_evals(bf_state_t _s, const char *code, size_t len)
+int bf_evalp(bf_state_t _s, bf_code_t _c)
 {
     int error;
-    parser_t parser;
-    ast_chunk_t *chunk;
-
     __state *state = _s;
+    __code *code = _c;
 
     if ((error = __bf_check_init(state)))
     {
@@ -31,30 +23,22 @@ int bf_evals(bf_state_t _s, const char *code, size_t len)
         return EBUSY;
     }
 
-    parser_new(&parser, code, len); // cannot fail
-
-    chunk = malloc(sizeof(ast_chunk_t));
-
-    if (!chunk)
+    if (!code->chunk)
     {
-        return ENOMEM;
+        return EINVAL;
     }
-
-    parser_consume_chunk(&parser, chunk);
 
     __frame *frame = malloc(sizeof(__frame));
 
     if (!frame)
     {
-        ast_free(chunk);
-        free(chunk);
         return ENOMEM;
     }
 
     *frame = (__frame) {
         .parent = NULL,
         .kind = frame_kind_chunk,
-        .chunk = chunk,
+        .chunk = code->chunk,
         .pc = 0,
     };
     state->current_frame = frame;
@@ -167,10 +151,6 @@ loop_flow:
         continue;
     }
 
-    // cleaning things up.
-    ast_free(chunk);
-    free(chunk);
-
     while (state->current_frame)
     {
         __frame *older_frame = state->current_frame->parent;
@@ -181,18 +161,11 @@ loop_flow:
     return 0;
 }
 
-int bf_eval_jit(bf_state_t _s, const char *code)
-{
-    return bf_evals_jit(_s, code, strlen(code));
-}
-
-int bf_evals_jit(bf_state_t _s, const char *code, size_t len)
+int bf_evalp_jit(bf_state_t _s, bf_code_t _c)
 {
     int error;
-    parser_t parser;
-    ast_chunk_t *chunk;
-
     __state *state = _s;
+    __code *code = _c;
 
     if ((error = __bf_check_init(state)))
     {
@@ -204,22 +177,16 @@ int bf_evals_jit(bf_state_t _s, const char *code, size_t len)
         return EBUSY;
     }
 
-    parser_new(&parser, code, len);
-
-    chunk = malloc(sizeof(ast_chunk_t));
-
-    if (!chunk)
+    if (!code->chunk)
     {
-        return ENOMEM;
+        return EINVAL;
     }
-
-    parser_consume_chunk(&parser, chunk);
 
     jit_codegen_t codegen;
 
-    if ((error = jit_generator_new(&codegen, &state->symbols, chunk)))
+    if ((error = jit_generator_new(&codegen, &state->symbols, code->chunk)))
     {
-        goto free_ast;
+        goto quick_exit;
     }
 
     if ((error = jit_generator_prepare(&codegen)))
@@ -263,9 +230,7 @@ free_page:
 free_generator:
     jit_generator_free(&codegen);
 
-free_ast:
-    ast_free(chunk);
-    free(chunk);
+quick_exit:
     return error;
 }
 

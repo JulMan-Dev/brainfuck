@@ -2,6 +2,7 @@ add_subdirectory(bin)
 add_subdirectory(librt)
 add_subdirectory(libint)
 add_subdirectory(jit)
+add_subdirectory(prepare)
 
 target_sources(bfc PRIVATE
     parser.c

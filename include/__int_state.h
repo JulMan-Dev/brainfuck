@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "libbf/rt.h"
+#include "__int_code.h"
 #include "ast.h"
 
 typedef int (*bf_instruction_t)(struct strip_t *, size_t);
@@ -24,6 +25,7 @@ typedef struct
     FILE *input,
         *output;
     lib_symbols_t symbols;
+    __code *ring;
 } __state;
 
 typedef enum
