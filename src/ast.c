@@ -3,7 +3,7 @@
 
 #include "ast.h"
 
-API_HIDDEN void ast__inspect_node(ast_node_t const *node, size_t depth)
+static BF_API_HIDDEN void ast__inspect_node(ast_node_t const *node, size_t depth)
 {
     for (size_t i = 0; i < depth; i++)
     {

@@ -24,12 +24,12 @@ typedef struct
     lib_symbols_t *symbols;
 } jit_codegen_t;
 
-API_HIDDEN int jit_generator_new(jit_codegen_t *, lib_symbols_t *, ast_chunk_t *);
-API_HIDDEN int jit_generator_prepare(jit_codegen_t *);
-API_HIDDEN int jit_generator_patch(jit_codegen_t *, unsigned char *);
-API_HIDDEN size_t jit_generator_code_len(jit_codegen_t const *);
-API_HIDDEN int jit_generator_flush(jit_codegen_t *, unsigned char *, size_t);
-API_HIDDEN int jit_generator_free(jit_codegen_t const *);
+BF_API_HIDDEN int jit_generator_new(jit_codegen_t *, lib_symbols_t *, ast_chunk_t *);
+BF_API_HIDDEN int jit_generator_prepare(jit_codegen_t *);
+BF_API_HIDDEN int jit_generator_patch(jit_codegen_t *, unsigned char *);
+BF_API_HIDDEN size_t jit_generator_code_len(jit_codegen_t const *);
+BF_API_HIDDEN int jit_generator_flush(jit_codegen_t *, unsigned char *, size_t);
+BF_API_HIDDEN int jit_generator_free(jit_codegen_t const *);
 
 // Not intended to be called directly in C. Written in Assembly for JIT-generated code.
-API_HIDDEN int __jit_builtin_error(void);
+BF_API_HIDDEN int __jit_builtin_error(void);

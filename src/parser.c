@@ -45,7 +45,7 @@ size_t parser_consume_chunk(parser_t *parser, ast_chunk_t *out)
     return bytes;
 }
 
-API_HIDDEN bool parser_is_bf(char code)
+static BF_API_HIDDEN bool parser_is_bf(char code)
 {
     return code == '<' || code == '>' || code == '+' || code == '-' || code == '.' || code == ',' ||
         code == '[' || code == ']';

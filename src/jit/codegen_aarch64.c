@@ -46,7 +46,7 @@ typedef struct
 
 #define PRE_APPEND_INSTRUCTIONS 2
 
-API_HIDDEN int __jit_push_patch(jit_codegen_t *, size_t, void *, uint64_t);
+static BF_API_HIDDEN int __jit_push_patch(jit_codegen_t *, size_t, void *, uint64_t);
 
 int jit_generator_prepare(jit_codegen_t *generator)
 {

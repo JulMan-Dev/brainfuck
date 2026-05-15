@@ -46,4 +46,4 @@ struct __frame
     size_t pc; // always 0 for frame_kind_function
 };
 
-API_HIDDEN int __bf_check_init(__state *);
+BF_API_HIDDEN int __bf_check_init(__state *);

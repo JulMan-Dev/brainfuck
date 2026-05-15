@@ -22,11 +22,11 @@ typedef struct
     ast_chunk_t *chunk;
 } codegen_t;
 
-API_HIDDEN void codegen_new(codegen_t *, ast_chunk_t *);
+BF_API_HIDDEN void codegen_new(codegen_t *, ast_chunk_t *);
 /// Use NULL to generate the root chunk.
-API_HIDDEN size_t codegen_generate(codegen_t *, ast_chunk_t *);
-API_HIDDEN void codegen_println(codegen_t *, size_t, char *);
-API_HIDDEN size_t codegen_allocate_section(codegen_t *, ast_chunk_t *);
-API_HIDDEN void codegen_process(codegen_t *, ast_node_t *, size_t);
-API_HIDDEN void codegen_dump(codegen_t);
-API_HIDDEN int codegen_flush(codegen_t, FILE *);
+BF_API_HIDDEN size_t codegen_generate(codegen_t *, ast_chunk_t *);
+BF_API_HIDDEN void codegen_println(codegen_t *, size_t, char *);
+BF_API_HIDDEN size_t codegen_allocate_section(codegen_t *, ast_chunk_t *);
+BF_API_HIDDEN void codegen_process(codegen_t *, ast_node_t *, size_t);
+BF_API_HIDDEN void codegen_dump(codegen_t);
+BF_API_HIDDEN int codegen_flush(codegen_t, FILE *);

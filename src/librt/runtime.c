@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/errno.h>
 
-API_HIDDEN int __allocate_strip(unsigned char **strip, size_t *cap)
+static BF_API_HIDDEN int __allocate_strip(unsigned char **strip, size_t *cap)
 {
     unsigned char *new_strip;
 
